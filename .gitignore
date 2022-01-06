@@ -1,0 +1,6 @@
+client/node_modules/
+.ipynb_checkpoints
+temp_models/
+val/
+datasets/
+models/
