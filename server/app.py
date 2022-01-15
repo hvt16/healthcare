@@ -5,6 +5,7 @@ from werkzeug.utils import redirect
 import disease_prediction
 import medicine_suggestion
 import xray
+import braintumor
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -39,6 +40,21 @@ def xray_prediction():
         filepath = './static/xray.jpeg'
         file.save(filepath)
         results = xray.predict_xray()
+        return jsonify(results)
+
+# adding brain tumor part 
+@app.route('/brain_tumor_prediction', methods=['POST'])
+@cross_origin()
+def brain_tumor_prediction():
+    print(request.files)
+    if 'selectedFile' not in request.files:
+        print('no file uploaded')
+        return jsonify("couldn't read file properly")
+    else:
+        file = request.files['selectedFile']
+        filepath = './static/bt.jpg'
+        file.save(filepath)
+        results = braintumor.predict_brain_tumor()
         return jsonify(results)
 
 if __name__ == '__main__':

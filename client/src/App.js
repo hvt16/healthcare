@@ -88,6 +88,7 @@ export default function BasicTabs() {
   const [result, setResult] = useState("");
   
   const [xRayResult, setXrayResult] = useState("");
+  const [btResult, setBtResult] = useState("");
   // onsubmit function
   // const onSubmit = (data) => {
   //   setResult(JSON.stringify(data));
@@ -133,6 +134,27 @@ export default function BasicTabs() {
     });
   }
 
+  // on submit and brain tumore prediction
+  // const [selectedFilebt, setSelectedFilebt] = React.useState(null);
+  const handleSubmitFilebt = (event) => {
+    event.preventDefault()
+    const formData = new FormData();
+    formData.append("selectedFile", selectedFile);
+    console.log(formData);
+    console.warn(selectedFile);
+    let url = "http://localhost:5000/brain_tumor_prediction";
+
+    axios.post(url, formData, { // receive two parameter endpoint url ,form data 
+    })
+    .then(function (response) {
+      console.log(response);
+      setBtResult(response.data);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+  }
+
   const handleFileSelect = (event) => {
     setSelectedFile(event.target.files[0])
   }
@@ -147,7 +169,8 @@ export default function BasicTabs() {
         >
           <Tab label="Disease Prediction" {...a11yProps(0)} />
           <Tab label="Medication Prescription" {...a11yProps(1)} />
-          <Tab label="Image-disease Detection" {...a11yProps(2)} />
+          <Tab label="Pnumonia Detection" {...a11yProps(2)} />
+          <Tab label="Brain Tumor Detection" {...a11yProps(3)} />
         </Tabs>
       </Box>
       {/* first tab for disease prediction */}
@@ -209,6 +232,23 @@ export default function BasicTabs() {
             Submit
             </Button>
             <p>{xRayResult}</p>
+        </Box>
+      </TabPanel>
+
+      {/* brain tumor */}
+      <TabPanel value={value} index={3}>
+        upload brain image
+        <Box component="form" noValidate autoComplete="off" onSubmit={handleSubmitFilebt}>
+        <input type="file" onChange={handleFileSelect}/>
+          <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            >
+            Submit
+            </Button>
+            <p>{btResult}</p>
         </Box>
       </TabPanel>
     </Box>
