@@ -13,10 +13,28 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import CustomizedTables from "./CustomizedPrescription";
+import DiabetesInput from "./diabetesInput";
+
+//temp image upload check
+import ButtonBase from "@mui/material/ButtonBase";
+import { styled } from "@mui/material/styles";
+import ComplexGrid from "./imageUpload";
+import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
+
 
 // edits from hvt
 import { useEffect } from "react";
 import axios from "axios";
+
+const Img = styled("img")({
+  margin: "auto",
+  display: "block",
+  maxWidth: "100%",
+  maxHeight: "100%"
+});
+
+
 
 function createData(name, netmeds, mg, pharmeasy) {
   return { name, netmeds,mg,pharmeasy};
@@ -86,6 +104,7 @@ export default function BasicTabs() {
   };
   const { register, handleSubmit } = useForm();
   const [result, setResult] = useState("");
+  const [resultPercentage, setResultPercentage] = useState("");
   
   const [xRayResult, setXrayResult] = useState("");
   const [btResult, setBtResult] = useState("");
@@ -96,25 +115,38 @@ export default function BasicTabs() {
 
   // on submit for disease prediction
   const onSubmit = (data) => {
+    setResult("Loading ...");
+    setResultPercentage("");
     axios.post(
       "http://localhost:5000/disease_prediction_using_symptoms",
       {  syms:data }
     ).then(function (response) {
       console.log(response);
       myArray = response.data.split("@");
-      setMedicines(myArray[1].split(", "));
-      console.log("these are medicines : " + medicines);
-      setRows(Array.from([createData(medicines.join(' '), 'netmeds', 'mg', 'pharmeasy'),]));
-      console.log(myArray);
+      setMedicines(myArray[2].split(", "));
+      console.log("these are medicines : " + medicines.length);
+      // temp edits
+      let v = []
+      for(let i=0;i<medicines.length;i++){
+        v.push(createData(medicines[i], 'netmeds', 'mg', 'pharmeasy'));
+      }
+      //
+      // setRows(Array.from([createData(medicines, 'netmeds', 'mg', 'pharmeasy'),]));
+      setRows(v);
+      console.log(v);
       setResult(JSON.stringify(myArray[0]));
+      setResultPercentage(JSON.stringify(myArray[1]));
     })
     .catch(function (error) {
       console.log(error);
     });
   };
 
+  const [imageUrl, setImageUrl] = useState(null);
+  const [imageUrlBt, setImageUrlBt] = useState(null);
   // on submit and file upload for xray prediction
   const [selectedFile, setSelectedFile] = React.useState(null);
+  const [selectedFileBt, setSelectedFileBt] = React.useState(null);
   const handleSubmitFile = (event) => {
     event.preventDefault()
     const formData = new FormData();
@@ -122,7 +154,7 @@ export default function BasicTabs() {
     console.log(formData);
     console.warn(selectedFile);
     let url = "http://localhost:5000/xray_prediction";
-
+    setXrayResult("Loading...");
     axios.post(url, formData, { // receive two parameter endpoint url ,form data 
     })
     .then(function (response) {
@@ -139,11 +171,11 @@ export default function BasicTabs() {
   const handleSubmitFilebt = (event) => {
     event.preventDefault()
     const formData = new FormData();
-    formData.append("selectedFile", selectedFile);
+    formData.append("selectedFile", selectedFileBt);
     console.log(formData);
-    console.warn(selectedFile);
+    console.warn(selectedFileBt);
     let url = "http://localhost:5000/brain_tumor_prediction";
-
+    setBtResult("Loading...");
     axios.post(url, formData, { // receive two parameter endpoint url ,form data 
     })
     .then(function (response) {
@@ -158,6 +190,20 @@ export default function BasicTabs() {
   const handleFileSelect = (event) => {
     setSelectedFile(event.target.files[0])
   }
+  useEffect(() => {
+    if (selectedFile) {
+      setImageUrl(URL.createObjectURL(selectedFile));
+    }
+  }, [selectedFile]);
+
+  const handleFileSelectBt = (event) => {
+    setSelectedFileBt(event.target.files[0])
+  }
+  useEffect(() => {
+    if (selectedFileBt) {
+      setImageUrlBt(URL.createObjectURL(selectedFileBt));
+    }
+  }, [selectedFileBt]);
   
   return (
     <Box sx={{ width: "100%" }}>
@@ -168,7 +214,7 @@ export default function BasicTabs() {
           aria-label="basic tabs example"
         >
           <Tab label="Disease Prediction" {...a11yProps(0)} />
-          <Tab label="Medication Prescription" {...a11yProps(1)} />
+          <Tab label="Diabities" {...a11yProps(1)} />
           <Tab label="Pnumonia Detection" {...a11yProps(2)} />
           <Tab label="Brain Tumor Detection" {...a11yProps(3)} />
         </Tabs>
@@ -189,29 +235,17 @@ export default function BasicTabs() {
             >
             Submit
             </Button>
-            <p>{result}</p>
+            <h1>{result}</h1>
+            <h2>{resultPercentage}</h2>
             <CustomizedTables rows={rows} medicines={medicines} />
         </Box>
       </TabPanel>
 
-      {/* second tab for ..... */}
+      {/* second tab for diabities prediction */}
       <TabPanel value={value} index={1}>
-        Enter The Disease
-        <Box component="form" noValidate autoComplete="off"onSubmit={handleSubmit(onSubmit)}>
-          <FormControl sx={{ width: "100%" }}>
-            <OutlinedInput {...register("medication")} placeholder="Please enter text" />
-            <MyFormHelperText />
-          </FormControl>
-          <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-            >
-            Submit
-            </Button>
-            <p>{result}</p>
-        </Box>
+        Diabities Prediction ...
+        <DiabetesInput/>
+        
       </TabPanel>
 
       {/* thrid tab for xray classification */}
@@ -220,7 +254,19 @@ export default function BasicTabs() {
       <input type="file" onChange={handleFileSelect}/>
       <input type="submit" value="Upload File" />
     </form> */}
-        upload the X ray image 
+        <Paper sx={{ p: 2, margin: "auto", maxWidth: 500, flexGrow: 1 }}>
+      <Grid container spacing={2}>
+        <Grid item>
+          <ButtonBase sx={{ width: 128, height: 128 }}>
+            <Img alt="" src={imageUrl} />
+          </ButtonBase>
+        </Grid>
+        <Grid item xs={12} sm container>
+          <Grid item xs container direction="column" spacing={2}>
+            <Grid item xs>
+              <Typography gutterBottom variant="subtitle1" component="div">
+                Upload X-Ray image
+              </Typography>
         <Box component="form" noValidate autoComplete="off" onSubmit={handleSubmitFile}>
         <input type="file" onChange={handleFileSelect}/>
           <Button
@@ -233,13 +279,30 @@ export default function BasicTabs() {
             </Button>
             <p>{xRayResult}</p>
         </Box>
+        </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
+    </Paper>
       </TabPanel>
 
       {/* brain tumor */}
       <TabPanel value={value} index={3}>
-        upload brain image
+      <Paper sx={{ p: 2, margin: "auto", maxWidth: 500, flexGrow: 1 }}>
+      <Grid container spacing={2}>
+        <Grid item>
+          <ButtonBase sx={{ width: 128, height: 128 }}>
+            <Img alt="" src={imageUrlBt} />
+          </ButtonBase>
+        </Grid>
+        <Grid item xs={12} sm container>
+          <Grid item xs container direction="column" spacing={2}>
+            <Grid item xs>
+              <Typography gutterBottom variant="subtitle1" component="div">
+                Upload Brain image
+              </Typography>
         <Box component="form" noValidate autoComplete="off" onSubmit={handleSubmitFilebt}>
-        <input type="file" onChange={handleFileSelect}/>
+        <input type="file" onChange={handleFileSelectBt}/>
           <Button
               type="submit"
               fullWidth
@@ -250,7 +313,13 @@ export default function BasicTabs() {
             </Button>
             <p>{btResult}</p>
         </Box>
+        </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
+    </Paper>
       </TabPanel>
+      
     </Box>
   );
 }

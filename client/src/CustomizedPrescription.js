@@ -42,8 +42,9 @@ function createData(name, netmeds, mg, pharmeasy) {
 // ];
 let medicines = "";
 export default function CustomizedTables(props) {
-  // medicines = Array.from(props.medicines).join("+");
-  medicines = props.medicines[0];
+  medicines = Array.from(props.medicines);
+  console.log(medicines);
+  // medicines = props.medicines[0];
   return (
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 700 }} aria-label="customized table">
@@ -69,7 +70,7 @@ export default function CustomizedTables(props) {
                     rel="noopener"
                     href={
                       "https://www.netmeds.com/catalogsearch/result?q=" +
-                      medicines
+                      row.name
                     }
                     underline="none"
                   >
@@ -82,7 +83,7 @@ export default function CustomizedTables(props) {
                   <Link
                     target="_blank"
                     rel="noopener"
-                    href={"https://www.1mg.com/search/all?name=" + medicines}
+                    href={"https://www.1mg.com/search/all?name=" + row.name}
                     underline="none"
                   >
                     {row.mg}
@@ -94,7 +95,7 @@ export default function CustomizedTables(props) {
                   <Link
                     target="_blank"
                     rel="noopener"
-                    href={"https://pharmeasy.in/search/all?name=" + medicines}
+                    href={"https://pharmeasy.in/search/all?name=" + row.name}
                     underline="none"
                   >
                     {row.pharmeasy}
